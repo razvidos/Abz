@@ -17,8 +17,8 @@ class CreateUsersTable extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('phone')->unique();
+            $table->integer('position_id');  // todo: You can get list of all positions with their IDs using the API method GET api/v1/positions
             $table->rememberToken();
             $table->timestamps();
         });
