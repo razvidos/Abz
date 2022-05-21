@@ -35,7 +35,7 @@ class UserController extends Controller
      * @return array
      * @throws ValidationException
      */
-    public function store(Request $request)
+    public function store(Request $request): array
     {
         $response = $this->validated($request);
         if ($this->isFail) {
@@ -65,14 +65,39 @@ class UserController extends Controller
      * Display the specified resource.
      *
      * @param int $id
-     * @return UserResource
+     * @return Response
      */
-    public function show(int $id): UserResource
+    public function show($id)
     {
-        return new UserResource(User::findOrFail($id));
+        if (!is_numeric($id)) {
+            $message = "Validation failed";
+            $fails = ["user_id" => "The user_id must be an integer."];
+            $statusCode = 400;
+
+        } else {
+            $user = new UserResource(User::find($id));
+
+            if (!$user->resource) {
+                $message = "The user with the requested identifier does not exist";
+                $fails = ["user_id" => "User not found"];
+                $statusCode = 404;
+            } else {
+                $response = [
+                    "success" => true,
+                    "user" => $user
+                ];
+                return response($response);
+            }
+        }
+        $response = [
+            "success" => false,
+            "message" => $message,
+            "fails" => $fails
+        ];
+        return response($response, $statusCode);
     }
 
-    protected function ensureTokenIsValid($request): Response|array
+    protected function ensureTokenIsValid($request)
     {
         $response["status"] = false;
         $this->isFail = false;
@@ -92,7 +117,7 @@ class UserController extends Controller
         return response($response, $status);
     }
 
-    protected function validated($request): Response|array
+    protected function validated($request)
     {
 
         $response = $this->ensureTokenIsValid($request);
