@@ -3,29 +3,50 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserCollection;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Contracts\Validation\Validator as ValidatorObject;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
+    protected static int $default_page_count = 5;
     protected bool $isFail = false;
     protected ValidatorObject $validator;
 
     /**
      * Display a listing of the resource.
      *
-     * @return AnonymousResourceCollection
+     * @return Response
+     * @throws ValidationException
      */
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request)
     {
-        return UserResource::collection(User::all());
+        $response = $this->indexValidated($request);
+        if ($this->isFail) {
+            return $response;
+        }
+
+        $parameters = $this->validator->validated();
+        $users_table = DB::table('users')->orderBy('id');
+
+        if (isset($parameters['offset'])) {
+            $users = $users_table
+                ->offset($parameters['offset'])
+                ->limit($parameters['count'])
+                ->get();
+            $response = response(new UserCollection($users));
+        } else {
+            $response = $this->myPaginator($users_table, $parameters);
+        }
+
+        return $response;
     }
 
     /**
@@ -37,7 +58,7 @@ class UserController extends Controller
      */
     public function store(Request $request): array
     {
-        $response = $this->validated($request);
+        $response = $this->storeValidated($request);
         if ($this->isFail) {
             return $response;
         }
@@ -64,10 +85,10 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param int $id
+     * @param int|string $id
      * @return Response
      */
-    public function show($id)
+    public function show($id): Response
     {
         if (!is_numeric($id)) {
             $message = "Validation failed";
@@ -97,7 +118,7 @@ class UserController extends Controller
         return response($response, $statusCode);
     }
 
-    protected function ensureTokenIsValid($request)
+    protected function ensureTokenIsValid(Request $request)
     {
         $response["status"] = false;
         $this->isFail = false;
@@ -117,7 +138,7 @@ class UserController extends Controller
         return response($response, $status);
     }
 
-    protected function validated($request)
+    protected function storeValidated(Request $request)
     {
 
         $response = $this->ensureTokenIsValid($request);
@@ -161,5 +182,78 @@ class UserController extends Controller
         }
 
         return [];
+    }
+
+    protected function indexValidated(Request $request)
+    {
+
+        $response = $this->ensureTokenIsValid($request);
+        if ($this->isFail) {
+            return $response;
+        }
+
+        $rules = [
+            "page" => 'required|min:1',
+            "offset" => 'integer|min:0',
+            "count" => 'integer|min:1|max:100',
+        ];
+        $messages = [
+        ];
+
+        $parameters = $request->all();
+        $parameters['page'] = $request->get('page');
+        $parameters['count'] = $request->get('count', self::$default_page_count);
+
+        $this->validator = Validator::make($parameters, $rules, $messages);
+
+        if ($this->validator->fails()) {
+            $response = ["success" => false];
+
+            $errors_messages = $this->validator->errors()->getMessages();
+
+            $response["message"] = "Validation failed";
+            $response["fails"] = $errors_messages;
+
+            return $response;
+        }
+
+        return [];
+    }
+
+    /**
+     * @return int
+     */
+    public static function getDefaultPageCount(): int
+    {
+        return self::$default_page_count;
+    }
+
+    protected function myPaginator($users_table, $parameters): Response
+    {
+        $user_paginator = $users_table->paginate($parameters['count']);
+        $users = $user_paginator->all();
+
+        $paginator_range = $user_paginator->getUrlRange(
+            $parameters['page'] - 1 ,
+            $parameters['page'] + 1);
+        $paginator_range[$user_paginator->lastPage() + 1] = null;
+        $paginator_range[0] = null;
+        $next_url = $paginator_range[$parameters['page'] + 1];
+        $prev_url = $paginator_range[$parameters['page'] - 1];
+
+        $response["success"] = true;
+        $response["total_pages"] = count($users);
+        $response["total_users"] = $user_paginator->total();
+        $response["count"] = $parameters['count'];
+        $response["page"] = $parameters['page'];
+        $response["links"] =
+            [
+                'next_url' => $next_url ? $next_url . "&count=" . $parameters['count'] : null,
+                'prev_url' => $prev_url ? $prev_url . "&count=" . $parameters['count'] : null,
+
+            ];
+        $response["user_paginator"] = $user_paginator;
+        $response["users"] = $users;
+        return response($response);
     }
 }
