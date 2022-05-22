@@ -16,8 +16,8 @@ class TokenController extends Controller
             $path = '/api/users';
             setcookie('registration_token', $token, $expires, $path);
 
-            $result["registration_token"] = $token;
             $result["success"] = true;
+            $result["registration_token"] = $token;
 
         } catch (Exception $e) {
             $result = ["success" => false];
