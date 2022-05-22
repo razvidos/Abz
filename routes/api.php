@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\TokenController;
 use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\UserPositionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,6 +20,7 @@ Route::get('/token', [TokenController::class, 'getToken']);
 
 Route::apiResources([
     'users' => UserController::class,
+    'positions' => UserPositionController::class,
 ]);
 
 //Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
