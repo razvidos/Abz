@@ -53,10 +53,10 @@ class UserController extends Controller
      * Store a newly created resource in storage.
      *
      * @param Request $request
-     * @return array
+     * @return Response
      * @throws ValidationException
      */
-    public function store(Request $request): array
+    public function store(Request $request)
     {
         $response = $this->storeValidated($request);
         if ($this->isFail) {
@@ -74,12 +74,12 @@ class UserController extends Controller
         );
         $request->file('photo')->storeAs('avatars/1', $file_name);
 
-
-        return [
+        $response = [
             'success' => true,
             'user_id' => $created_user->id,
             'message' => "New user successfully registered"
         ];
+        return response($response);
     }
 
     /**
@@ -151,7 +151,7 @@ class UserController extends Controller
             "email" => 'required|unique:users,email|email',
             "phone" => 'required|unique:users,phone|regex:^[\+]{0,1}380([0-9]{9})^',
             "photo" => "required|file|max:5242880|mimes:jpg,jpeg|dimensions:width=70,height=70",
-            "position_id" => 'required|integer|min:1',
+            "position_id" => 'required|integer|nullable|exists:user_positions,id',
         ];
         $messages = [
             'unique' => 'unique',
