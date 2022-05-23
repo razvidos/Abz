@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\API\TokenController;
 use App\Http\Controllers\API\UserController;
-use App\Http\Controllers\UserPositionController;
+use App\Http\Controllers\API\UserPositionController;
 use Illuminate\Support\Facades\Route;
 
 /*

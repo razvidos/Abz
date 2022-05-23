@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\Controller;
 use App\Models\UserPosition;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use function response;
 
 class UserPositionController extends Controller
 {
@@ -37,13 +38,13 @@ class UserPositionController extends Controller
                 "success" => false,
                 "message" => "Positions not found"
             ];
+            return response($response, 404);
         } else {
             $response = [
                 "success" => true,
                 "position" => $position
             ];
+            return response($response);
         }
-
-        return response($response);
     }
 }
