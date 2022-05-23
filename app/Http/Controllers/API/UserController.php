@@ -56,7 +56,7 @@ class UserController extends Controller
      * @return Response
      * @throws ValidationException
      */
-    public function store(Request $request)
+    public function store(Request $request): Response
     {
         $response = $this->storeValidated($request);
         if ($this->isFail) {
