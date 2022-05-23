@@ -4,24 +4,29 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Exception;
-use Illuminate\Support\Facades\Cookie;
+use Illuminate\Http\Response;
 
 class TokenController extends Controller
 {
-    public function getToken(): array
+    protected int $minutes_to_expires = 40;
+
+    public function getToken(): Response
     {
         try {
             $token = bin2hex(random_bytes(15));
-            $expires = time() + 60 * 40;
             $path = '/api/users';
-            setcookie('registration_token', $token, $expires, $path);
 
             $result["success"] = true;
             $result["registration_token"] = $token;
+            return response($result)
+                ->withCookie(cookie(
+                    'registration_token',
+                    $token,
+                    $this->minutes_to_expires,
+                    $path));
 
         } catch (Exception $e) {
-            $result = ["success" => false];
+            return response(["success" => false], 500);
         }
-        return $result;
     }
 }
