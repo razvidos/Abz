@@ -77,7 +77,7 @@ class UserController extends Controller
         $response = [
             'success' => true,
             'user_id' => $created_user->id,
-            'message' => "New user successfully registered"
+            'message' => __('api.User.message.200')
         ];
         return response($response);
     }
@@ -91,16 +91,16 @@ class UserController extends Controller
     public function show($id): Response
     {
         if (!is_numeric($id)) {
-            $message = "Validation failed";
-            $fails = ["user_id" => "The user_id must be an integer."];
+            $message = __('api.Validation.failed');
+            $fails = ["user_id" => __('api.User.fails.user_id_IsNotInteger')];
             $statusCode = 400;
 
         } else {
             $user = new UserResource(User::find($id));
 
             if (!$user->resource) {
-                $message = "The user with the requested identifier does not exist";
-                $fails = ["user_id" => "User not found"];
+                $message = __('api.User.message.404');
+                $fails = ["user_id" => __('api.User.fails.404')];
                 $statusCode = 404;
             } else {
                 $response = [
@@ -129,7 +129,7 @@ class UserController extends Controller
                 return response([]);
             } else {
                 $status = 401;
-                $response['message'] = 'The token expired.';
+                $response['message'] = __('api.User.message.401');
             }
         } else {
             $status = 405;
@@ -171,14 +171,14 @@ class UserController extends Controller
                         $this->validator->errors()->first('phone')
                     ]
                 )) {
-                $response["message"] = "User with this phone or email already exist";
+                $response["message"] = __('api.User.validation.unUniqueEmailOrPhone');
                 $this->isFail = true;
                 return response($response, 409);
             }
 
             $errors_messages = $this->validator->errors()->getMessages();
 
-            $response["message"] = "Validation failed";
+            $response["message"] = __('api.Validation.failed');
             $response["fails"] = $errors_messages;
 
             $this->isFail = true;
@@ -213,7 +213,7 @@ class UserController extends Controller
 
             $errors_messages = $this->validator->errors()->getMessages();
 
-            $response["message"] = "Validation failed";
+            $response["message"] = __('api.Validation.failed');
             $response["fails"] = $errors_messages;
 
             $this->isFail = true;
@@ -246,7 +246,7 @@ class UserController extends Controller
             ) {
                 $response = [
                     "success" => false,
-                    "message" => "Page not found"
+                    "message" => __('api.Pagination.message.404')
                 ];
                 return response($response, 404);
             }

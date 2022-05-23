@@ -36,7 +36,7 @@ class UserPositionController extends Controller
         if (!$position) {
             $response = [
                 "success" => false,
-                "message" => "Positions not found"
+                "message" => __('api.Positions.message.404')
             ];
             return response($response, 404);
         } else {
