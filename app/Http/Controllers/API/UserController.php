@@ -118,15 +118,15 @@ class UserController extends Controller
         return response($response, $statusCode);
     }
 
-    protected function ensureTokenIsValid(Request $request)
+    protected function ensureTokenIsValid(Request $request): Response
     {
-        $response["status"] = false;
+        $response["success"] = false;
         $this->isFail = false;
         if ($request->isMethod('get')) {
-            return [];
+            return response([]);
         } elseif ($request->isMethod('post')) {
             if (Cookie::has('registration_token')) {
-                return [];
+                return response([]);
             } else {
                 $status = 401;
                 $response['message'] = 'The token expired.';
@@ -138,9 +138,12 @@ class UserController extends Controller
         return response($response, $status);
     }
 
-    protected function storeValidated(Request $request)
+    /**
+     * @param Request $request
+     * @return Response
+     */
+    protected function storeValidated(Request $request): Response
     {
-
         $response = $this->ensureTokenIsValid($request);
         if ($this->isFail) {
             return $response;
@@ -150,7 +153,7 @@ class UserController extends Controller
             "name" => 'required|min:2|max:60',
             "email" => 'required|unique:users,email|email',
             "phone" => 'required|unique:users,phone|regex:^[\+]{0,1}380([0-9]{9})^',
-            "photo" => "required|file|max:5242880|mimes:jpg,jpeg|dimensions:width=70,height=70",
+            "photo" => "required|file|max:5242880|mimes:jpg,jpeg|dimensions:width_min=70,height_min=70",
             "position_id" => 'required|integer|nullable|exists:user_positions,id',
         ];
         $messages = [
@@ -170,7 +173,7 @@ class UserController extends Controller
                 )) {
                 $response["message"] = "User with this phone or email already exist";
                 $this->isFail = true;
-                return $response;
+                return response($response, 409);
             }
 
             $errors_messages = $this->validator->errors()->getMessages();
@@ -178,20 +181,19 @@ class UserController extends Controller
             $response["message"] = "Validation failed";
             $response["fails"] = $errors_messages;
 
-            return $response;
+            $this->isFail = true;
+            return response($response, 422);
         }
 
-        return [];
+        return response($response, 500);
     }
 
+    /**
+     * @param Request $request
+     * @return array|Response
+     */
     protected function indexValidated(Request $request)
     {
-
-        $response = $this->ensureTokenIsValid($request);
-        if ($this->isFail) {
-            return $response;
-        }
-
         $rules = [
             "page" => 'required|min:1',
             "offset" => 'integer|min:0',
@@ -214,7 +216,8 @@ class UserController extends Controller
             $response["message"] = "Validation failed";
             $response["fails"] = $errors_messages;
 
-            return $response;
+            $this->isFail = true;
+            return response($response, 422);
         }
 
         return [];
@@ -228,9 +231,26 @@ class UserController extends Controller
         return self::$default_page_count;
     }
 
+    /**
+     * @param $users_table
+     * @param $parameters
+     * @return Response
+     */
     protected function myPaginator($users_table, $parameters): Response
     {
         $user_paginator = $users_table->paginate($parameters['count']);
+        if(!isset($parameters['offset'])) {
+            if(
+                1 > $parameters['page']
+                || $parameters['page'] > $user_paginator->lastPage()
+            ) {
+                $response = [
+                    "success" => false,
+                    "message" => "Page not found"
+                ];
+                return response($response, 404);
+            }
+        }
         $users = $user_paginator->all();
 
         $paginator_range = $user_paginator->getUrlRange(
