@@ -11,14 +11,33 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Tinify as Tinify;
 
 class UserController extends Controller
 {
+    protected static string $default_PhotoPath = 'avatars/2/';
     protected static int $default_page_count = 5;
     protected bool $isFail = false;
     protected ValidatorObject $validator;
+
+    /**
+     * @return int
+     */
+    public static function getDefaultPageCount(): int
+    {
+        return self::$default_page_count;
+    }
+
+    /**
+     * @return string
+     */
+    private function getPhotoPath(): string
+    {
+        return self::$default_PhotoPath;
+    }
 
     /**
      * Display a listing of the resource.
@@ -67,12 +86,26 @@ class UserController extends Controller
         setcookie('registration_token', '', 0, '/api/users');
 
         $file_name_format = "user-photo-%s.%s";
+        $original_extension = $request->file('photo')->getClientOriginalExtension();
         $file_name = sprintf(
             $file_name_format,
             $created_user->id,
-            $request->file('photo')->getClientOriginalExtension()
+            $original_extension
         );
-        $request->file('photo')->storeAs('avatars/1', $file_name);
+        try {
+            Tinify\setKey(env("TINIFY_API_KEY"));
+            Tinify\validate();
+
+            $source = Tinify\fromBuffer($request->file('photo')->get());
+            $resized = $source->resize(array(
+                "method" => "cover",
+                "width" => 70,
+                "height" => 70
+            ));
+            Storage::put($this->getPhotoPath() . $file_name, $resized->toBuffer());
+        } catch (Tinify\Exception $e) {
+            $request->file('photo')->storeAs('avatars/1', $file_name);
+        }
 
         $response = [
             'success' => true,
@@ -221,14 +254,6 @@ class UserController extends Controller
         }
 
         return [];
-    }
-
-    /**
-     * @return int
-     */
-    public static function getDefaultPageCount(): int
-    {
-        return self::$default_page_count;
     }
 
     /**
