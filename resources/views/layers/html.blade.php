@@ -21,7 +21,7 @@
 
         <ul class="nav nav-pills">
             <li class="nav-item"><a href="/" class="nav-link active" aria-current="page">Home</a></li>
-            <li class="nav-item"><a href="{{route('users.index', ['page' => 1])}}" class="nav-link active"
+            <li class="nav-item"><a href="{{route('users.index')}}" class="nav-link active"
                                     aria-current="page">Users</a></li>
             <li class="nav-item"><a href="{{route('users.create')}}" class="nav-link active" aria-current="page">Registration</a>
             </li>
@@ -32,5 +32,9 @@
 <div class="container">
     @yield('main-content', 'Default content')
 </div>
+
+{{--jQuery--}}
+<script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+@stack('end_scripts')
 </body>
 </html>

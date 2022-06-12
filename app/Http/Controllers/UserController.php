@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Cookie;
 class UserController extends Controller
 {
     protected static string $default_Photo = 'storage/avatars/1/user-photo-0.jpg';
+    protected static int $countPerPage = 6;
 
 
     /**
@@ -21,19 +22,57 @@ class UserController extends Controller
     }
 
     /**
+     * @return int
+     */
+    protected function getCountPerPage(): int
+    {
+        return self::$countPerPage;
+    }
+
+    /**
      * Display a listing of the resource.
      *
-     * @return View
+     * @return View|string
      */
-    public function index(Request $request): View
+    public function index(Request $request)
     {
+        if ($request->missing('page')) {
+            $request->request->add(['page' => 1]);
+        }
+
+        $count = $this->getCountPerPage();
+        $page = $request->request->get('page');
+        $request->request->add(['count' => $count]);
+        $request->request->add(['offset' => $count * ($page - 1)]);
+
         $response = (new API\UserController)->index($request);
+        if (!$response) {
+            return $response;
+        }
         $content = json_decode($response->getContent());
+
         foreach ($content->users as $index => $user) {
             if (!$user->photo) {
                 $content->users[$index]->photo = $this->getDefaultPhoto();
             }
         }
+
+        if ($request->ajax()) {
+            $html = '';
+            foreach ($content->users as $user) {
+                $html .= '<tr>'
+                    . "<td>$user->id</td>"
+                    . "<td><img src=\"" . asset($user->photo) . '" alt=\"\" width="30px" style="border-radius: 50%;">'
+                    . '<a href="' . route('users.show', $user->id) . "\">$user->name</a>"
+                    . '</td>'
+                    . "<td>$user->email</td>"
+                    . "<td>$user->phone</td>"
+                    . "<td>$user->position_id</td>"
+                    . '</tr>';
+            }
+            return $html;
+        }
+
         return view('users.index', compact(['content']));
     }
 

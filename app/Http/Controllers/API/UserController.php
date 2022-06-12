@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\UserCollection;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Contracts\Validation\Validator as ValidatorObject;
@@ -55,17 +54,7 @@ class UserController extends Controller
         $parameters = $this->validator->validated();
         $users_table = DB::table('users')->orderBy('id');
 
-        if (isset($parameters['offset'])) {
-            $users = $users_table
-                ->offset($parameters['offset'])
-                ->limit($parameters['count'])
-                ->get();
-            $response = response(new UserCollection($users));
-        } else {
-            $response = $this->myPaginator($users_table, $parameters);
-        }
-
-        return $response;
+        return $this->myPaginator($users_table, $parameters);
     }
 
     /**

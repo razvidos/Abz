@@ -22,45 +22,48 @@
             <th scope="col">Position ID</th>
         </tr>
         </thead>
-        <tbody>
-        @foreach($content->users as $user)
-            <tr>
-                <td>{{$user->id}}</td>
-                <td><img src="{{asset($user->photo)}}" alt="" width="30px" style="border-radius: 50%;"><a
-                        href="{{route('users.show', $user->id)}}">{{$user->name}}</a></td>
-                <td>{{$user->email}}</td>
-                <td>{{$user->phone}}</td>
-                <td>{{$user->position_id}}</td>
-            </tr>
-        @endforeach
+        <tbody id="users">
         </tbody>
     </table>
-    <nav aria-label="Page navigation">
-        <ul class="pagination justify-content-end">
-            @if (1 != $user_paginator->current_page)
-                <li class="page-item">
-                    <a class="page-link" href="{{$user_paginator->first_page_url}}">First</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="{{$user_paginator->prev_page_url}}" tabindex="-1">Previous</a>
-                </li>
-            @endif
+    <div class="text-center m-3">
+        <button class="btn btn-primary" id="load-more" data-paginate="2">Load more...</button>
+        <p class="invisible">No more users...</p>
+    </div>
 
-            @for($page=1; $page <= $content->total_pages; $page++)
-                <li class="page-item @if ($page == $user_paginator->current_page)active @endif">
-                    <a class="page-link" href="{{route('users.index', ['page' => $page])}}">{{$page}}</a>
-                </li>
-            @endfor
-
-            @if ($user_paginator->last_page != $user_paginator->current_page)
-                <li class="page-item">
-                    <a class="page-link" href="{{$user_paginator->next_page_url}}">Next</a>
-                </li>
-
-                <li class="page-item">
-                    <a class="page-link" href="{{$user_paginator->last_page_url}}">Last</a>
-                </li>
-            @endif
-        </ul>
-    </nav>
 @endsection
+
+@push('end_scripts')
+    <script type="text/javascript">
+        const paginate = 1;
+        loadMoreData(paginate);
+
+        $('#load-more').click(function () {
+            const page = $(this).data('paginate');
+            loadMoreData(page);
+            $(this).data('paginate', page + 1);
+        });
+
+        function loadMoreData(paginate) {
+            $.ajax({
+                url: '?page=' + paginate,
+                type: 'get',
+                datatype: 'html',
+                beforeSend: function () {
+                    $('#load-more').text('Loading...');
+                }
+            })
+                .done(function (data) {
+                    if (data.length === 0) {
+                        $('.invisible').removeClass('invisible');
+                        $('#load-more').hide();
+                    } else {
+                        $('#load-more').text('Load more...');
+                        $('#users').append(data);
+                    }
+                })
+                .fail(function () {
+                    alert('Something went wrong.');
+                });
+        }
+    </script>
+@endpush
