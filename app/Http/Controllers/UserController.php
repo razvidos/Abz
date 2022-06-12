@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 
 class UserController extends Controller
 {
@@ -43,6 +44,15 @@ class UserController extends Controller
      */
     public function create(): View
     {
+        $response = (new API\TokenController)->getToken();
+        $cookies = $response->headers->getCookies();
+        foreach ($cookies as $cookie) {
+            Cookie::queue(
+                $cookie->getName(),
+                $cookie->getValue(),
+                API\TokenController::getMinutesToExpires()
+            );
+        }
         return view('users.create');
     }
 
@@ -50,11 +60,16 @@ class UserController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return View|\Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        //
+        $response = (new API\UserController)->store($request);
+        $content = json_decode($response->getContent());
+        if (!$content->success) {
+            return $response;
+        }
+        return $this->show(User::find($content->user_id));
     }
 
     /**

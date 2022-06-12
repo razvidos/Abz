@@ -8,7 +8,7 @@ use Illuminate\Http\Response;
 
 class TokenController extends Controller
 {
-    protected int $minutes_to_expires = 40;
+    protected static int $minutes_to_expires = 40;
 
     public function getToken(): Response
     {
@@ -19,14 +19,22 @@ class TokenController extends Controller
             $result["success"] = true;
             $result["registration_token"] = $token;
             return response($result)
-                ->withCookie(cookie(
+                ->cookie(
                     'registration_token',
                     $token,
-                    $this->minutes_to_expires,
-                    $path));
+                    self::getMinutesToExpires(),
+                    $path);
 
         } catch (Exception $e) {
             return response(["success" => false], 500);
         }
+    }
+
+    /**
+     * @return int
+     */
+    public static function getMinutesToExpires(): int
+    {
+        return self::$minutes_to_expires;
     }
 }
