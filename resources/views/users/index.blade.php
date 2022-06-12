@@ -1,8 +1,13 @@
-<?php $user_paginator = $content->user_paginator ?>
+<?php $user_paginator = $content->user_paginator; ?>
 @extends('layers\html')
 
 
-@section('title', 'User index')
+@section('title',
+'Users '
+. $user_paginator->current_page
+. '/'
+. $content->total_pages
+)
 
 @section('main-content')
     <h1>Users</h1>
@@ -21,7 +26,8 @@
         @foreach($content->users as $user)
             <tr>
                 <td>{{$user->id}}</td>
-                <td><a href="{{route('users.show', $user->id)}}">{{$user->name}}</a></td>
+                <td><img src="{{asset($user->photo)}}" alt="" width="30px" style="border-radius: 50%;"><a
+                        href="{{route('users.show', $user->id)}}">{{$user->name}}</a></td>
                 <td>{{$user->email}}</td>
                 <td>{{$user->phone}}</td>
                 <td>{{$user->position_id}}</td>
@@ -29,7 +35,7 @@
         @endforeach
         </tbody>
     </table>
-    <nav aria-label="Page navigation example">
+    <nav aria-label="Page navigation">
         <ul class="pagination justify-content-end">
             @if (1 != $user_paginator->current_page)
                 <li class="page-item">
@@ -40,7 +46,7 @@
                 </li>
             @endif
 
-            @for($page=1; $page <= $user_paginator->last_page; $page++)
+            @for($page=1; $page <= $content->total_pages; $page++)
                 <li class="page-item @if ($page == $user_paginator->current_page)active @endif">
                     <a class="page-link" href="{{route('users.index', ['page' => $page])}}">{{$page}}</a>
                 </li>

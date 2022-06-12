@@ -8,6 +8,17 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
+    protected static string $default_Photo = 'storage/avatars/1/user-photo-0.jpg';
+
+
+    /**
+     * @return string
+     */
+    private function getDefaultPhoto(): string
+    {
+        return self::$default_Photo;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -17,7 +28,11 @@ class UserController extends Controller
     {
         $response = (new API\UserController)->index($request);
         $content = json_decode($response->getContent());
-//        dd($content);
+        foreach ($content->users as $index => $user) {
+            if (!$user->photo) {
+                $content->users[$index]->photo = $this->getDefaultPhoto();
+            }
+        }
         return view('users.index', compact(['content']));
     }
 
@@ -50,6 +65,9 @@ class UserController extends Controller
      */
     public function show(User $user): View
     {
+        if (!$user->photo) {
+            $user->photo = $this->getDefaultPhoto();
+        }
         return view('users.show', compact('user'));
     }
 }

@@ -18,7 +18,7 @@ use Tinify as Tinify;
 
 class UserController extends Controller
 {
-    protected static string $default_PhotoPath = 'avatars/2/';
+    protected static string $default_PhotoPath = '/avatars/1/';
     protected static int $default_page_count = 5;
     protected bool $isFail = false;
     protected ValidatorObject $validator;
@@ -92,6 +92,7 @@ class UserController extends Controller
             $created_user->id,
             $original_extension
         );
+        $path_to_photo = null;
         try {
             Tinify\setKey(env("TINIFY_API_KEY"));
             Tinify\validate();
@@ -102,9 +103,17 @@ class UserController extends Controller
                 "width" => 70,
                 "height" => 70
             ));
-            Storage::put($this->getPhotoPath() . $file_name, $resized->toBuffer());
+            if (Storage::put('public' . $this->getPhotoPath() . $file_name, $resized->toBuffer())) {
+                $path_to_photo = 'storage' . $this->getPhotoPath() . $file_name;
+            }
         } catch (Tinify\Exception $e) {
-            $request->file('photo')->storeAs('avatars/1', $file_name);
+            if ($request->file('photo')->storePubliclyAs('public' . $this->getPhotoPath(), $file_name)) {
+                $path_to_photo = 'storage' . $this->getPhotoPath() . $file_name;
+            }
+        }
+        if ($path_to_photo) {
+            $created_user->photo = $path_to_photo;
+            $created_user->save();
         }
 
         $response = [
@@ -287,7 +296,7 @@ class UserController extends Controller
         $prev_url = $paginator_range[$parameters['page'] - 1];
 
         $response["success"] = true;
-        $response["total_pages"] = count($users);
+        $response["total_pages"] = $user_paginator->lastPage();
         $response["total_users"] = $user_paginator->total();
         $response["count"] = $parameters['count'];
         $response["page"] = $parameters['page'];
