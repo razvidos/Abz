@@ -9,9 +9,9 @@
 
 ## Abz.agancy testing task
 
-- [**Task result on the host**](https://ingvar-abz2.pp.ua/)
+- [**Task result on the host**](https://ingvar-abz2.pp.ua/users)
 
-  (https://ingvar-abz2.pp.ua/)
+  (https://ingvar-abz2.pp.ua/users)
 
 
 - [PHP backend task](https://drive.google.com/file/d/1zUC2D72mGqSip5-3zvKJYGMsd7-KEfHG/view).
