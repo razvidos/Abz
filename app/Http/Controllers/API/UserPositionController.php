@@ -29,7 +29,7 @@ class UserPositionController extends Controller
      * @param int $id
      * @return Response
      */
-    public function show($id): Response
+    public function show(int $id): Response
     {
         $position = UserPosition::find($id);
 

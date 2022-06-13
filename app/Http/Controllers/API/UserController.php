@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Contracts\Validation\Validator as ValidatorObject;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -63,6 +64,7 @@ class UserController extends Controller
      * @param Request $request
      * @return Response
      * @throws ValidationException
+     * @throws FileNotFoundException
      */
     public function store(Request $request): Response
     {

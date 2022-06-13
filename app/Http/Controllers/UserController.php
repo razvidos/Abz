@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
@@ -33,6 +35,7 @@ class UserController extends Controller
      * Display a listing of the resource.
      *
      * @return View|string
+     * @throws ValidationException
      */
     public function index(Request $request)
     {
@@ -98,8 +101,8 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return View|\Illuminate\Http\Response
+     * @param Request $request
+     * @return View|Response
      */
     public function store(Request $request)
     {
@@ -114,7 +117,7 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param int $id
+     * @param User $user
      * @return View
      */
     public function show(User $user): View

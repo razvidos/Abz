@@ -9,7 +9,7 @@ class UserPositionController
     /**
      * @return View
      */
-    public function index()
+    public function index(): View
     {
         $response = (new Api\UserPositionController)->index();
         $content = json_decode($response->getContent());
