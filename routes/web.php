@@ -23,4 +23,6 @@ Route::get(
     [UserPositionController::class, 'index']
 )->name('userPositions');
 
-Route::resource('users', UserController::class);
+Route::resource('users', UserController::class)->only([
+    'index', 'show', 'create', 'store'
+]);

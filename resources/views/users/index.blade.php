@@ -1,13 +1,8 @@
 <?php $user_paginator = $content->user_paginator; ?>
-@extends('layers\html')
+@extends('layers.html')
 
 
-@section('title',
-'Users '
-. $user_paginator->current_page
-. '/'
-. $content->total_pages
-)
+@section('title', 'Users ')
 
 @section('main-content')
     <h1>Users</h1>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\UserPosition;
 use Illuminate\Contracts\View\View;
 
 class UserPositionController
@@ -11,9 +12,7 @@ class UserPositionController
      */
     public function index(): View
     {
-        $response = (new Api\UserPositionController)->index();
-        $content = json_decode($response->getContent());
-        $positions = $content->positions;
+        $positions = UserPosition::all();
 
         return view('user_positions', compact(['positions']));
     }

@@ -1,4 +1,4 @@
-@extends('layers\html')
+@extends('layers.html')
 
 @section('title', 'User ' . $user['id'])
 

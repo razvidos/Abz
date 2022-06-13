@@ -21,9 +21,4 @@ Route::get('/token', [TokenController::class, 'getToken']);
 Route::apiResources([
     'users' => UserController::class,
     'positions' => UserPositionController::class,
-]);
-
-//Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
-//    return $request->user();
-//});
-
+], array("as" => "api"));
