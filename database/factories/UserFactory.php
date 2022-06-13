@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use Faker\Factory as FakerFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 class UserFactory extends Factory
 {
@@ -16,11 +16,12 @@ class UserFactory extends Factory
      */
     public function definition()
     {
+        $phone_faker = FakerFactory::create('uk_UA');
         return [
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
-            'phone' => $this->faker->unique()->e164PhoneNumber(),
-            'position_id' => rand(1,4)
+            'phone' => $phone_faker->unique()->e164PhoneNumber(),
+            'position_id' => rand(1, 4)
         ];
     }
 
