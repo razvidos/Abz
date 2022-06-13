@@ -14,11 +14,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use Tinify as Tinify;
+use Image;
+use Tinify;
 
 class UserController extends Controller
 {
-    protected static string $default_PhotoPath = '/avatars/1/';
+    protected static array $default_PhotoPath = [
+        'image' => 'storage\avatars\1\\',
+        'tinify' => '/avatars/1/'
+    ];
     protected static int $default_page_count = 5;
     protected bool $isFail = false;
     protected ValidatorObject $validator;
@@ -34,9 +38,9 @@ class UserController extends Controller
     /**
      * @return string
      */
-    private function getPhotoPath(): string
+    private function getPhotoPath($key = 'image'): string
     {
-        return self::$default_PhotoPath;
+        return self::$default_PhotoPath[$key];
     }
 
     /**
@@ -84,6 +88,7 @@ class UserController extends Controller
             $original_extension
         );
         $path_to_photo = null;
+
         try {
             Tinify\setKey(env("TINIFY_API_KEY"));
             Tinify\validate();
@@ -94,12 +99,18 @@ class UserController extends Controller
                 "width" => 70,
                 "height" => 70
             ));
-            if (Storage::put('public' . $this->getPhotoPath() . $file_name, $resized->toBuffer())) {
-                $path_to_photo = 'storage' . $this->getPhotoPath() . $file_name;
+            if (Storage::put('public' . $this->getPhotoPath('tinify') . $file_name, $resized->toBuffer())) {
+                $path_to_photo = $this->getPhotoPath() . $file_name;
             }
         } catch (Tinify\Exception $e) {
-            if ($request->file('photo')->storePubliclyAs('public' . $this->getPhotoPath(), $file_name)) {
-                $path_to_photo = 'storage' . $this->getPhotoPath() . $file_name;
+            $photo = $request->file('photo');
+            $destinationPath = public_path($this->getPhotoPath());
+            $img = Image::make($photo->path());
+            $img->resize(70, 70, function ($constraint) {
+                $constraint->aspectRatio();
+            });
+            if ($img->save($destinationPath . $file_name)) {
+                $path_to_photo = $this->getPhotoPath() . $file_name;
             }
         }
         if ($path_to_photo) {
