@@ -21,10 +21,17 @@
 
         <ul class="nav nav-pills">
             <li class="nav-item"><a href="/" class="nav-link active" aria-current="page">Home</a></li>
-            <li class="nav-item"><a href="{{route('users.index')}}" class="nav-link active"
-                                    aria-current="page">Users</a></li>
-            <li class="nav-item"><a href="{{route('users.create')}}" class="nav-link active" aria-current="page">Registration</a>
-            </li>
+        </ul>
+        <ul class="nav">
+            <li class="nav-item"><a href="{{route('users.index')}}" class="nav-link active" aria-current="page">
+                    Users
+                </a></li>
+            <li class="nav-item"><a href="{{route('userPositions')}}" class="nav-link active" aria-current="page">
+                    User Positions
+                </a></li>
+            <li class="nav-item"><a href="{{route('users.create')}}" class="nav-link active" aria-current="page">
+                    Registration
+                </a></li>
         </ul>
     </header>
 </div>
