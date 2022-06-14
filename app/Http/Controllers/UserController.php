@@ -65,7 +65,7 @@ class UserController extends Controller
             foreach ($paginator->users as $user) {
                 $html .= '<tr>'
                     . "<td>$user->id</td>"
-                    . "<td><img src=\"" . asset($user->photo) . '" alt=\"\" width="30px" style="border-radius: 50%;">'
+                    . "<td><img class=\"rounded-circle\" src=\"" . asset($user->photo) . '" alt=\"\" width="30px">'
                     . '<a href="' . route('users.show', $user->id) . "\">$user->name</a>"
                     . '</td>'
                     . "<td>$user->email</td>"
