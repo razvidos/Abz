@@ -1,4 +1,3 @@
-<?php $user_paginator = $content->user_paginator; ?>
 @extends('layers.html')
 
 

@@ -287,29 +287,25 @@ class UserController extends Controller
                 return response($response, 404);
             }
         }
-        $users = $user_paginator->all();
 
         $paginator_range = $user_paginator->getUrlRange(
-            $parameters['page'] - 1 ,
+            $parameters['page'] - 1,
             $parameters['page'] + 1);
         $paginator_range[$user_paginator->lastPage() + 1] = null;
         $paginator_range[0] = null;
-        $next_url = $paginator_range[$parameters['page'] + 1];
-        $prev_url = $paginator_range[$parameters['page'] - 1];
 
         $response["success"] = true;
-        $response["total_pages"] = $user_paginator->lastPage();
+        $response["page"] = $user_paginator->currentPage();
         $response["total_users"] = $user_paginator->total();
-        $response["count"] = $parameters['count'];
-        $response["page"] = $parameters['page'];
+        $response["total_pages"] = $user_paginator->lastPage();
+        $response["count"] = $user_paginator->count();
         $response["links"] =
             [
-                'next_url' => $next_url ? $next_url . "&count=" . $parameters['count'] : null,
-                'prev_url' => $prev_url ? $prev_url . "&count=" . $parameters['count'] : null,
+                'next_url' => $user_paginator->nextPageUrl(),
+                'prev_url' => $user_paginator->previousPageUrl(),
 
             ];
-        $response["user_paginator"] = $user_paginator;
-        $response["users"] = $users;
+        $response["users"] = $user_paginator->items();
         return response($response);
     }
 }

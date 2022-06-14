@@ -52,17 +52,17 @@ class UserController extends Controller
         if (!$response) {
             return $response;
         }
-        $content = json_decode($response->getContent());
+        $paginator = json_decode($response->getContent());
 
-        foreach ($content->users as $index => $user) {
+        foreach ($paginator->users as $index => $user) {
             if (!$user->photo) {
-                $content->users[$index]->photo = $this->getDefaultPhoto();
+                $paginator->users[$index]->photo = $this->getDefaultPhoto();
             }
         }
 
         if ($request->ajax()) {
             $html = '';
-            foreach ($content->users as $user) {
+            foreach ($paginator->users as $user) {
                 $html .= '<tr>'
                     . "<td>$user->id</td>"
                     . "<td><img src=\"" . asset($user->photo) . '" alt=\"\" width="30px" style="border-radius: 50%;">'
@@ -76,7 +76,7 @@ class UserController extends Controller
             return $html;
         }
 
-        return view('users.index', compact(['content']));
+        return view('users.index');
     }
 
     /**
